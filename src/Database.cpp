@@ -6,6 +6,7 @@
 #include <thread>
 #include <stdexcept>
 #include <cstdlib>
+#include <mutex>
 
 //----------------------------------------------------
 // Constructor & Destructor
