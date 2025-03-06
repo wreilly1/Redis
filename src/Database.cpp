@@ -7,9 +7,6 @@
 #include <stdexcept>
 #include <cstdlib>
 
-//----------------------------------------------------
-// Constructor & Destructor
-//----------------------------------------------------
 Database::Database() : loading_(false) {
     // Open the AOF file in append mode. It will be created if it doesn't exist.
     aof_.open("appendonly.aof", std::ios::app);
@@ -26,11 +23,6 @@ Database::~Database() {
     }
 }
 
-//----------------------------------------------------
-// Persistence Helper Functions
-//----------------------------------------------------
-
-// Append a command to the AOF file (unless we are loading).
 void Database::persistCommand(const std::string& cmd) {
     if (!loading_ && aof_.is_open()) {
         aof_ << cmd << "\n";
@@ -38,7 +30,6 @@ void Database::persistCommand(const std::string& cmd) {
     }
 }
 
-// Load persisted commands from the AOF file on startup.
 void Database::loadAOF() {
     std::ifstream infile("appendonly.aof");
     if (!infile.is_open()) {
@@ -91,9 +82,6 @@ void Database::loadAOF() {
     std::cout << "AOF loaded." << std::endl;
 }
 
-//----------------------------------------------------
-// Core Commands
-//----------------------------------------------------
 void Database::set(const std::string& key, const std::string& value) {
     std::lock_guard<std::recursive_mutex> lock(dbMutex_);
     std::cout << "SET: " << key << " -> " << value << std::endl;
@@ -121,9 +109,6 @@ bool Database::del(const std::string& key) {
     return existed;
 }
 
-//----------------------------------------------------
-// Numeric Commands
-//----------------------------------------------------
 long Database::incr(const std::string& key) {
     std::lock_guard<std::recursive_mutex> lock(dbMutex_);
     std::string val = get(key);
@@ -156,9 +141,7 @@ long Database::decr(const std::string& key) {
     return num;
 }
 
-//----------------------------------------------------
-// Expiration Commands
-//----------------------------------------------------
+
 bool Database::expire(const std::string& key, int seconds) {
     std::lock_guard<std::recursive_mutex> lock(dbMutex_);
     std::cout << "EXPIRE: " << key << " for " << seconds << " seconds" << std::endl;
@@ -198,9 +181,6 @@ bool Database::persist(const std::string& key) {
     return false;
 }
 
-//----------------------------------------------------
-// Multiple Key Commands
-//----------------------------------------------------
 void Database::mset(const std::vector<std::string>& keyValues) {
     std::lock_guard<std::recursive_mutex> lock(dbMutex_);
     for (size_t i = 0; i < keyValues.size(); i += 2) {
@@ -217,9 +197,6 @@ std::vector<std::string> Database::mget(const std::vector<std::string>& keys) {
     return results;
 }
 
-//----------------------------------------------------
-// List Commands
-//----------------------------------------------------
 void Database::lpush(const std::string& key, const std::string& value) {
     std::lock_guard<std::recursive_mutex> lock(dbMutex_);
     lists_[key].push_front(value);
@@ -271,16 +248,10 @@ std::vector<std::string> Database::lrange(const std::string& key, int start, int
     return result;
 }
 
-//----------------------------------------------------
-// Ping Command
-//----------------------------------------------------
 std::string Database::ping() {
     return "PONG";
 }
 
-//----------------------------------------------------
-// Helper: Check Expiration
-//----------------------------------------------------
 bool Database::isExpired(const std::string& key) {
     std::lock_guard<std::recursive_mutex> lock(dbMutex_);
     auto it = expirations_.find(key);
@@ -289,7 +260,7 @@ bool Database::isExpired(const std::string& key) {
     }
     auto now = std::chrono::system_clock::now();
     if (now >= it->second) {
-        del(key); // Remove expired key.
+        del(key); 
         return true;
     }
     return false;
