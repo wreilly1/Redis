@@ -1,25 +1,24 @@
 #include "Server.h"
-#include "ThreadPool.h"   // Ensure the thread pool header is included.
+#include "ThreadPool.h"   
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <cstring>
 #include <iostream>
 
-// Constructor: initialize server parameters and create a thread pool with 4 threads.
+
 Server::Server(int port)
-    : port_(port), serverFd_(-1), db_(), parser_(db_), pool_(4) // Now pool_ is defined in the header
+    : port_(port), serverFd_(-1), db_(), parser_(db_), pool_(4) 
 {
 }
 
-// Destructor: close the server socket if open.
+
 Server::~Server() {
     if (serverFd_ != -1) {
         close(serverFd_);
     }
 }
 
-// Setup the listening socket.
 bool Server::setupSocket() {
     serverFd_ = socket(AF_INET, SOCK_STREAM, 0);
     if (serverFd_ < 0) {
